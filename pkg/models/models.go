@@ -1,7 +1,5 @@
 package models
 
-import "time"
-
 type User struct {
 	Username string `gorm:"primaryKey"`
 	Email    string `gorm:"unique"`
@@ -24,7 +22,7 @@ type Response struct {
 }
 
 type Post struct {
-	CreatedAt time.Time
+	CreatedAt string
 	PostId    int    `gorm:"primaryKey"`
 	Username  string `gorm:"unique"`
 	Post      string
@@ -34,4 +32,8 @@ type PostRequest struct {
 	PostId   int    `json:"postId"`
 	Username string `json:"username"`
 	Post     string `json:"post"`
+}
+
+type DeleteRequest struct {
+	PostId int `json:"postId" db:"postId"`
 }

@@ -6,7 +6,6 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"strconv"
-	"time"
 )
 
 type PostgresStore struct {
@@ -24,7 +23,7 @@ func (p *PostgresStore) ConnectToDatabase() error {
 
 	zap.S().Infof("Connecting to database ...")
 
-	dsn := "host=" + host + " user=" + user + " password=" + password + " dbname=" + dbname + " port=" + strconv.Itoa(port) + " sslmode=disable"
+	dsn := "host=" + host + " user=" + user + " password=" + password + " dbname=" + dbname + " port=" + strconv.Itoa(port) + " sslmode=disable " + "TimeZone=Asia/Kolkata"
 
 	var err error
 	p.db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
@@ -59,7 +58,7 @@ func (p *PostgresStore) UserSignup(username string, email string, hash string) e
 	return result.Error
 }
 
-func (p *PostgresStore) AddPost(createdAt time.Time, postId int, username string, post string) error {
+func (p *PostgresStore) AddPost(createdAt string, postId int, username string, post string) error {
 	Post := models.Post{
 		CreatedAt: createdAt,
 		PostId:    postId,
@@ -68,7 +67,7 @@ func (p *PostgresStore) AddPost(createdAt time.Time, postId int, username string
 	}
 	result := p.db.Create(&Post)
 	if result.Error != nil {
-		zap.S().Errorf("Unable to insert the given post with error ")
+		zap.S().Errorf("Unable to insert the given post")
 		return result.Error
 	}
 	zap.S().Infof("Post  inserted successfully !")
@@ -78,7 +77,7 @@ func (p *PostgresStore) AddPost(createdAt time.Time, postId int, username string
 func (p *PostgresStore) FetchPosts() ([]models.Post, error) {
 	var posts []models.Post
 	result := p.db.Find(&posts)
-	if result.Error == nil {
+	if result.Error != nil {
 		zap.S().Errorf("No posts fetched, empty array received !")
 		return nil, result.Error
 	}
@@ -88,7 +87,7 @@ func (p *PostgresStore) FetchPosts() ([]models.Post, error) {
 
 func (p *PostgresStore) DeletePost(postId int) error {
 	var post models.Post
-	result := p.db.Where("postId = ?", postId).Delete(&post)
+	result := p.db.Where("post_id = ?", postId).Delete(&post)
 	if result.Error != nil {
 		zap.S().Errorf("Error while deleting the post with postId")
 		return result.Error

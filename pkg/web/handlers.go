@@ -1,9 +1,11 @@
 package web
 
 import (
+	"fmt"
 	"github.com/bmerchant22/snt-hackathon.git/pkg/models"
 	"github.com/bmerchant22/snt-hackathon.git/pkg/store"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 	"net/http"
 	"time"
 )
@@ -50,6 +52,7 @@ func (srv *Server) UserLogin(c *gin.Context) {
 
 	// Compare the passwords
 	if user.Password != request.Password {
+		zap.S().Errorf("%v && %v", user.Password, request.Password)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
 	}
@@ -73,7 +76,10 @@ func (srv *Server) AddPost(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	createdAt := time.Now()
+	t := time.Now()
+	createdAt := fmt.Sprintf("%d-%02d-%02d %02d:%02d:%02d",
+		t.Year(), t.Month(), t.Day(),
+		t.Hour(), t.Minute(), t.Second())
 	if err := srv.store.AddPost(createdAt, request.PostId, request.Username, request.Post); err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
 	}
@@ -82,7 +88,7 @@ func (srv *Server) AddPost(c *gin.Context) {
 }
 
 func (srv *Server) DeletePost(c *gin.Context) {
-	var request models.PostRequest
+	var request models.DeleteRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -95,4 +101,3 @@ func (srv *Server) DeletePost(c *gin.Context) {
 	response := models.Response{Message: "Post added successfully"}
 	c.JSON(http.StatusOK, response)
 }
-	
